@@ -2,42 +2,219 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>简单Java代码网页</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>员工绩效报表</title>
     <style>
-        body {
-            font-family: Arial;
-            background: #f5f5f5;
-            padding: 30px;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
         }
-        .box {
+
+        body {
+            background-color: #f5f7fa;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
             background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .title {
+            text-align: center;
+            font-size: 24px;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            font-weight: bold;
+        }
+
+        /* 查询条件区域 */
+        .query-box {
+            background: #f8f9fa;
             padding: 20px;
             border-radius: 8px;
-            max-width: 700px;
-            margin: 0 auto;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: end;
         }
-        pre {
-            background: #2d2d2d;
-            color: #fff;
-            padding: 15px;
-            border-radius: 6px;
+
+        .form-item {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-item label {
+            font-size: 14px;
+            color: #34495e;
+            font-weight: 500;
+        }
+
+        .form-item input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 180px;
+            outline: none;
+        }
+
+        .form-item input:focus {
+            border-color: #3498db;
+        }
+
+        .query-btn {
+            padding: 8px 25px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .query-btn:hover {
+            background: #2980b9;
+        }
+
+        /* 表格区域 */
+        .table-box {
+            width: 100%;
             overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        table th,
+        table td {
+            padding: 12px 15px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+
+        table th {
+            background: #3498db;
+            color: white;
+            font-weight: bold;
+        }
+
+        table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        table tr:hover {
+            background: #e3f2fd;
+        }
+
+        .empty-tip {
+            text-align: center;
+            padding: 30px;
+            color: #7f8c8d;
         }
     </style>
 </head>
+
 <body>
-    <div class="box">
-        <h2>简单 Java 代码示例</h2>
-        <pre>
-public class Hello {
-    public static void main(String[] args) {
-        System.out.println("Hello Java!");
-        int a = 10;
-        int b = 20;
-        System.out.println("a + b = " + (a + b));
-    }
-}
-        </pre>
+    <div class="container">
+        <div class="title">员工绩效报表</div>
+
+        <!-- 查询条件 -->
+        <div class="query-box">
+            <div class="form-item">
+                <label>工作站ID</label>
+                <input type="text" id="stationId" placeholder="请输入工作站ID">
+            </div>
+            <div class="form-item">
+                <label>员工ID</label>
+                <input type="text" id="empId" placeholder="请输入员工ID">
+            </div>
+            <div class="form-item">
+                <label>日期</label>
+                <input type="date" id="workDate">
+            </div>
+            <button class="query-btn" onclick="searchData()">查询</button>
+        </div>
+
+        <!-- 报表列表 -->
+        <div class="table-box">
+            <table>
+                <thead>
+                    <tr>
+                        <th>工作站ID</th>
+                        <th>员工ID</th>
+                        <th>日期</th>
+                        <th>操作件数</th>
+                    </tr>
+                </thead>
+                <tbody id="dataTable">
+                    <tr>
+                        <td colspan="4" class="empty-tip">点击查询按钮查看数据</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
+
+    <script>
+        // 模拟测试数据
+        const mockData = [
+            { stationId: "ST001", empId: "EMP001", workDate: "2025-12-20", count: 120 },
+            { stationId: "ST001", empId: "EMP002", workDate: "2025-12-20", count: 98 },
+            { stationId: "ST002", empId: "EMP001", workDate: "2025-12-21", count: 135 },
+            { stationId: "ST003", empId: "EMP003", workDate: "2025-12-21", count: 150 },
+            { stationId: "ST002", empId: "EMP002", workDate: "2025-12-22", count: 112 }
+        ];
+
+        // 查询功能
+        function searchData() {
+            const stationId = document.getElementById("stationId").value.trim();
+            const empId = document.getElementById("empId").value.trim();
+            const workDate = document.getElementById("workDate").value;
+
+            // 过滤数据
+            let result = mockData.filter(item => {
+                let match = true;
+                if (stationId && item.stationId !== stationId) match = false;
+                if (empId && item.empId !== empId) match = false;
+                if (workDate && item.workDate !== workDate) match = false;
+                return match;
+            });
+
+            // 渲染表格
+            renderTable(result);
+        }
+
+        // 渲染表格数据
+        function renderTable(data) {
+            const tbody = document.getElementById("dataTable");
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="empty-tip">暂无数据</td></tr>`;
+                return;
+            }
+
+            let html = "";
+            data.forEach(item => {
+                html += `
+                <tr>
+                    <td>${item.stationId}</td>
+                    <td>${item.empId}</td>
+                    <td>${item.workDate}</td>
+                    <td>${item.count}</td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
+        }
+    </script>
 </body>
 </html>
