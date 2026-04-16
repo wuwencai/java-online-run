@@ -133,15 +133,40 @@
         <div class="query-box">
             <div class="form-item">
                 <label>工作站ID</label>
-                <input type="text" id="stationId" placeholder="请输入工作站ID">
+                <select id="stationId">
+                    <option value="">全部</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                </select>
             </div>
             <div class="form-item">
                 <label>员工ID</label>
-                <input type="text" id="empId" placeholder="请输入员工ID">
+                <select id="empId">
+                    <option value="">全部</option>
+                    <option value="A01">A01</option>
+                    <option value="B01">B01</option>
+                    <option value="B03">B03</option>
+                    <option value="C04">C04</option>
+                </select>
             </div>
             <div class="form-item">
                 <label>日期</label>
                 <input type="date" id="workDate">
+            </div>
+            <div class="form-item">
+                <label>月</label>
+                <input type="month" id="workMonth">
+            </div>
+            <div class="form-item">
+                <label>操作类型</label>
+                <select id="operationType">
+                    <option value="">全部</option>
+                    <option value="putaway">上架</option>
+                    <option value="picking">拣货</option>
+                </select>
             </div>
             <button class="query-btn" onclick="searchData()">查询</button>
         </div>
@@ -155,11 +180,14 @@
                         <th>员工ID</th>
                         <th>日期</th>
                         <th>操作件数</th>
+                        <th>上架操作件数</th>
+                        <th>拣货操作件数</th>
+                        <th>盘点操作件数</th>
                     </tr>
                 </thead>
                 <tbody id="dataTable">
                     <tr>
-                        <td colspan="4" class="empty-tip">点击查询按钮查看数据</td>
+                        <td colspan="7" class="empty-tip">点击查询按钮查看数据</td>
                     </tr>
                 </tbody>
             </table>
@@ -169,11 +197,11 @@
     <script>
         // 模拟测试数据
         const mockData = [
-            { stationId: "ST001", empId: "EMP001", workDate: "2025-12-20", count: 120 },
-            { stationId: "ST001", empId: "EMP002", workDate: "2025-12-20", count: 98 },
-            { stationId: "ST002", empId: "EMP001", workDate: "2025-12-21", count: 135 },
-            { stationId: "ST003", empId: "EMP003", workDate: "2025-12-21", count: 150 },
-            { stationId: "ST002", empId: "EMP002", workDate: "2025-12-22", count: 112 }
+            { stationId: "1", empId: "EMP001", workDate: "2025-12-20", count: 120, putawayCount: 70, pickingCount: 50, inventoryCount: 10 },
+            { stationId: "1", empId: "EMP002", workDate: "2025-12-20", count: 98, putawayCount: 60, pickingCount: 38, inventoryCount: 8 },
+            { stationId: "2", empId: "EMP001", workDate: "2025-12-21", count: 135, putawayCount: 75, pickingCount: 60, inventoryCount: 12 },
+            { stationId: "3", empId: "EMP003", workDate: "2025-12-21", count: 150, putawayCount: 85, pickingCount: 65, inventoryCount: 15 },
+            { stationId: "2", empId: "EMP002", workDate: "2025-12-22", count: 112, putawayCount: 62, pickingCount: 50, inventoryCount: 9 }
         ];
 
         // 查询功能
@@ -181,6 +209,8 @@
             const stationId = document.getElementById("stationId").value.trim();
             const empId = document.getElementById("empId").value.trim();
             const workDate = document.getElementById("workDate").value;
+            const workMonth = document.getElementById("workMonth").value;
+            const operationType = document.getElementById("operationType").value;
 
             // 过滤数据
             let result = mockData.filter(item => {
@@ -188,6 +218,9 @@
                 if (stationId && item.stationId !== stationId) match = false;
                 if (empId && item.empId !== empId) match = false;
                 if (workDate && item.workDate !== workDate) match = false;
+                if (workMonth && !item.workDate.startsWith(workMonth)) match = false;
+                if (operationType === "putaway" && item.putawayCount === 0) match = false;
+                if (operationType === "picking" && item.pickingCount === 0) match = false;
                 return match;
             });
 
@@ -199,7 +232,7 @@
         function renderTable(data) {
             const tbody = document.getElementById("dataTable");
             if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="empty-tip">暂无数据</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="empty-tip">暂无数据</td></tr>`;
                 return;
             }
 
@@ -211,6 +244,9 @@
                     <td>${item.empId}</td>
                     <td>${item.workDate}</td>
                     <td>${item.count}</td>
+                    <td>${item.putawayCount}</td>
+                    <td>${item.pickingCount}</td>
+                    <td>${item.inventoryCount || 0}</td>
                 </tr>`;
             });
             tbody.innerHTML = html;
